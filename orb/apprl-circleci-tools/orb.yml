@@ -30,7 +30,7 @@ commands:
           command: |
             mkdir /root/.kube
             cp workspace/kubeconfig/config.yaml ~/.kube/config;
-  sync:
+  sync-ips-to-aws-security-group:
     description: "Syncs circleci machine ip with aws security group"
     parameters:
       security_group:
