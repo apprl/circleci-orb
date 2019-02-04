@@ -34,3 +34,9 @@ commands:
               pip --no-cache-dir install awscli==1.15.47 && \
               apk add git openssh make jq bash && \
               rm -rf /var/cache/apk/*
+      - run:
+          name: Remove ips form security group
+          command: wget -O - https://raw.githubusercontent.com/apprl/circleci-orb/master/orb/aws-security-group-ip/remove-ips-from-sg.sh | AWS_SECURITY_GROUP=<<parameters.security_group>> bash
+      - run:
+          name: Add ip to security group
+          command: wget -O - https://raw.githubusercontent.com/apprl/circleci-orb/master/orb/aws-security-group-ip/add-ip-to-sg.sh | AWS_SECURITY_GROUP=<<parameters.security_group>> bash
