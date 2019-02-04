@@ -23,6 +23,17 @@ examples:
 
 
 commands:
+  test-helm:
+    parameters:
+      kubeconfig:
+        type: string
+    steps:
+      - run:
+          name: Test helm
+          command: |
+            public_ip_address=$(wget -qO- http://checkip.amazonaws.com)
+            echo "This computers public ip address is $public_ip_address region $AWS_DEFAULT_REGION"
+            helm version --kube-context=<<parameters.kubeconfig>>
   copy-kubeconfig:
     steps:
       - run:
