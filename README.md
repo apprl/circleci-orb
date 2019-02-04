@@ -16,7 +16,12 @@ circleci orb publish orb/apprl-circleci-tools/orb.yml apprl/apprl-circleci-tools
 
 `Create first published version`
 ```
-circleci orb publish orb/apprl-circleci-tools/orb.yml apprl/apprl-circleci-tools@dev:first patch
+circleci orb publish promote apprl/apprl-circleci-tools@dev:first major
+```
+
+`Increment a release`
+```
+circleci orb increment promote apprl/apprl-circleci-tools@dev:first [major|minor|patch]
 ```
 
 ### circleCI Orbs
