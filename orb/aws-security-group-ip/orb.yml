@@ -1,0 +1,36 @@
+version: 2.1
+
+description: |
+  Syncs circleci machine ip with aws security group
+
+examples:
+  basic_commands:
+    description: "Examples uses aws security group ip sync"
+    usage:
+      version: 2.1
+      orbs:
+        aws-security-group-ip: apprl/aws-security-group-ip@1.0.0
+      jobs:
+        build:
+          docker:
+            - image: circleci/python:2.7
+          steps:
+            - aws-security-group-ip/sync:
+                security_group: aws-security-group
+
+
+commands:
+  sync:
+    description: "Syncs circleci machine ip with aws security group"
+    parameters:
+      security_group:
+        type: string
+    steps:
+      - run:
+          name: Insall aws cli
+          command: |
+            apk --no-cache update && \
+              apk --no-cache add python py-pip py-setuptools ca-certificates groff less && \
+              pip --no-cache-dir install awscli==1.15.47 && \
+              apk add git openssh make jq bash && \
+              rm -rf /var/cache/apk/*
