@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  aws-s3: circleci/aws-s3@1.0.0
+
 description: |
   Syncs circleci machine ip with aws security group
 
@@ -20,6 +23,13 @@ examples:
 
 
 commands:
+  copy-kubeconfig:
+    steps:
+      - run:
+          name: Copy kubeconfig from workspace
+          command: |
+            mkdir /root/.kube
+            cp workspace/kubeconfig/config.yaml ~/.kube/config;
   sync:
     description: "Syncs circleci machine ip with aws security group"
     parameters:
@@ -40,3 +50,27 @@ commands:
       - run:
           name: Add ip to security group
           command: wget -O - https://raw.githubusercontent.com/apprl/circleci-orb/master/orb/aws-security-group-ip/add-ip-to-sg.sh | AWS_SECURITY_GROUP=<<parameters.security_group>> bash
+
+jobs:
+  download-kubeconfig:
+    parameters:
+      kubeconfig:
+        type: string
+      working_directory:
+        type: string
+    working_directory: <<parameters.working_directory>>
+    docker:
+      - image: 'circleci/python:2.7'
+    steps:
+      - attach_workspace:
+          at: workspace
+      - run:
+          name: "Setup aws retion environment variables"
+          command: echo 'export AWS_REGION="$AWS_DEFAULT_REGION"' >> $BASH_ENV
+      - aws-s3/copy:
+          from: <<parameters.kubeconfig>>
+          to: 'kubeconfig/config.yaml'
+      - persist_to_workspace:
+          root: .
+          paths:
+            - kubeconfig
