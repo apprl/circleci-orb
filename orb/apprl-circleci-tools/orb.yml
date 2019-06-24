@@ -1,5 +1,10 @@
 version: 2.1
 
+executors:
+  sentry-cli:
+    docker:
+      - image: getsentry/sentry-cli
+
 orbs:
   aws-s3: circleci/aws-s3@1.0.0
 
@@ -32,8 +37,6 @@ examples:
                 working_directory: ~/dir
                 kubeconfig: s3://path/to/kubectl/config.yaml
                 context: aws
-
-
 
 
 commands:
@@ -111,3 +114,55 @@ jobs:
           root: .
           paths:
             - kubeconfig
+  notify-sentry-app-released:
+    executor: sentry-cli
+    parameters:
+      project:
+        type: string
+      tag:
+        type: string
+      auto-set-commits:
+        default: true
+        type: boolean
+        description: Use sentry-cli --auto flag to set associated commits automatically, else it will use commits from latest tag
+    steps:
+      - checkout
+      - run:
+          name: Create sentry release
+          command: |
+            sentry-cli releases new -p <<parameters.project>> <<parameters.tag>>
+      - when:
+          condition: <<parameters.auto-set-commits>>
+          steps:
+            - run:
+                name: Auto set commits for sentry release
+                command: |
+                  sentry-cli releases set-commits <<parameters.tag>> --auto
+      - unless:
+          condition: <<parameters.auto-set-commits>>
+          steps:
+            - run:
+                name: Get github previous tag
+                command: |
+                  echo 'export PREV_TAG=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`)' >> $BASH_ENV
+            - run:
+                name: Set commits for sentry release
+                command: |
+                  sentry-cli releases set-commits <<parameters.tag>> --commit "$CIRCLE_PROJECT_USERNAME/$CIRCLE_USERNAME@$PREV_TAG..<<parameters.tag>>"
+      - run:
+          name: Report release built to sentry
+          command: |
+            sentry-cli releases finalize <<parameters.tag>>
+
+  notify-sentry-app-deployed:
+    executor: sentry-cli
+    parameters:
+      tag:
+        type: string
+      environment:
+        type: string
+    steps:
+      - run:
+          name: Report release deployed to sentry
+          command: |
+            sentry-cli releases deploys <<parameters.tag>> new -e <<parameters.environment>>
