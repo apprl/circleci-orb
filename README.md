@@ -21,7 +21,7 @@ circleci orb publish promote apprl/apprl-circleci-tools@dev:first major
 
 `Increment a release`
 ```
-circleci orb increment promote apprl/apprl-circleci-tools@dev:first [major|minor|patch]
+circleci orb publish promote apprl/apprl-circleci-tools@dev:first [major|minor|patch]
 ```
 
 ### circleCI Orbs
