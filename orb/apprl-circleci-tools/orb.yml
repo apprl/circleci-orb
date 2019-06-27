@@ -36,7 +36,14 @@ examples:
             - apprl-circleci-tools/download-kubeconfig:
                 working_directory: ~/dir
                 kubeconfig: s3://path/to/kubectl/config.yaml
-                context: aws
+            - apprl-circleci-tools/notify-sentry-app-released:
+                tag: 1.2.3
+                project: example
+                auto-set-commits: true
+            - apprl-circleci-tools/notify-sentry-app-deployed:
+                tag: 1.2.3
+                project: example
+                environment: stage
 
 
 commands:
@@ -119,8 +126,10 @@ jobs:
     parameters:
       project:
         type: string
+        description: Project name in Sentry
       tag:
         type: string
+        description: Release ID (a.k.a version). This is commonly a git SHA or a custom version number.
       auto-set-commits:
         default: true
         type: boolean
@@ -130,14 +139,14 @@ jobs:
       - run:
           name: Create sentry release
           command: |
-            sentry-cli releases new -p <<parameters.project>> <<parameters.tag>>
+            sentry-cli releases new -p <<parameters.project>> <<parameters.project>>@<<parameters.tag>>
       - when:
           condition: <<parameters.auto-set-commits>>
           steps:
             - run:
                 name: Auto set commits for sentry release
                 command: |
-                  sentry-cli releases set-commits <<parameters.tag>> --auto
+                  sentry-cli releases set-commits <<parameters.project>>@<<parameters.tag>> --auto
       - unless:
           condition: <<parameters.auto-set-commits>>
           steps:
@@ -148,7 +157,7 @@ jobs:
             - run:
                 name: Set commits for sentry release
                 command: |
-                  sentry-cli releases set-commits <<parameters.tag>> --commit "$CIRCLE_PROJECT_USERNAME/$CIRCLE_USERNAME@$PREV_TAG..<<parameters.tag>>"
+                  sentry-cli releases set-commits <<parameters.project>>@<<parameters.tag>> --commit "$CIRCLE_PROJECT_USERNAME/$CIRCLE_USERNAME@$PREV_TAG..<<parameters.tag>>"
       - run:
           name: Report release built to sentry
           command: |
@@ -157,12 +166,17 @@ jobs:
   notify-sentry-app-deployed:
     executor: sentry-cli
     parameters:
+      project:
+        type: string
+        description: Project name in Sentry
       tag:
         type: string
+        description: Release ID (a.k.a version). This is commonly a git SHA or a custom version number.
       environment:
         type: string
+        description: The environment that the release is deployed to
     steps:
       - run:
           name: Report release deployed to sentry
           command: |
-            sentry-cli releases deploys <<parameters.tag>> new -e <<parameters.environment>>
+            sentry-cli releases deploys <<parameters.project>>@<<parameters.tag>> new -e <<parameters.environment>>
