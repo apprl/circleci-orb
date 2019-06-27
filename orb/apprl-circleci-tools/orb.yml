@@ -161,7 +161,7 @@ jobs:
       - run:
           name: Report release built to sentry
           command: |
-            sentry-cli releases finalize <<parameters.tag>>
+            sentry-cli releases finalize <<parameters.project>>@<<parameters.tag>>
 
   notify-sentry-app-deployed:
     executor: sentry-cli
