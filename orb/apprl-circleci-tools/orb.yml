@@ -84,7 +84,9 @@ commands:
         type: string
     steps:
       - detect/init
-      - run: echo "The current operating system is ${OSD_ID}."
+      - run:
+          name: The current operating system is
+          command: echo "${OSD_ID}"
       - run:
           name: Install aws cli
           command: |
