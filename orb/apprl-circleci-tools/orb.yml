@@ -98,9 +98,8 @@ commands:
                   apk add git openssh make jq bash && \
                   rm -rf /var/cache/apk/*
               else
-                echo "Unsupported Operating System."
+                echo "Unsupported Operating System." && \
                 exit 1
-                ;;
               fi
       - run:
           name: Remove ips form security group
