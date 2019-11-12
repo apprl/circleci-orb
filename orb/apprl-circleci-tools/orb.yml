@@ -84,10 +84,10 @@ commands:
         type: string
     steps:
       - detect/init
+      - run: echo "The current operating system is ${OSD_ID}."
       - run:
           name: Install aws cli
           command: |
-            echo "The current operating system is ${OSD_ID} and $OSD_FAMILY." && \
             case $OSD_FAMILY in
               linux)
                 if [ $OSD_ID == "debian" ];then
