@@ -7,7 +7,7 @@ executors:
 
 orbs:
   aws-s3: circleci/aws-s3@1.0.0
-  detect: circleci/os-detect@0.1
+  detect: circleci/os-detect@0.2.0
 
 description: |
   Syncs circleci machine ip with aws security group
@@ -84,7 +84,7 @@ commands:
         type: string
     steps:
       - detect/init
-      - run: 'echo "The current operating system is ${OSD_ID}."'
+      - run: 'echo "The current operating system is ${OSD_ID} and ${$OSD_FAMILY}."'
       - run:
           name: Install aws cli
           command: |
