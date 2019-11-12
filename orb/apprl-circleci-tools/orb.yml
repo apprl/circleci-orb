@@ -7,6 +7,7 @@ executors:
 
 orbs:
   aws-s3: circleci/aws-s3@1.0.0
+  detect: circleci/os-detect@0.2.0
 
 description: |
   Syncs circleci machine ip with aws security group
@@ -82,14 +83,26 @@ commands:
       security_group:
         type: string
     steps:
+      - detect/init
       - run:
-          name: Insall aws cli
+          name: The current operating system is
+          command: echo "${OSD_ID}"
+      - run:
+          name: Install aws cli
           command: |
-            apk --no-cache update && \
-              apk --no-cache add python py-pip py-setuptools ca-certificates groff less && \
-              pip --no-cache-dir install awscli==1.15.47 && \
-              apk add git openssh make jq bash && \
-              rm -rf /var/cache/apk/*
+              if [ $OSD_ID == "debian" ];then
+                apt install python3 python3-dev python3-pip bash-completion --yes && \
+                pip3 install awscli
+              elif [ $OSD_ID == "alpine" ];then
+                apk --no-cache update && \
+                  apk --no-cache add python py-pip py-setuptools ca-certificates groff less && \
+                  pip --no-cache-dir install awscli==1.15.47 && \
+                  apk add git openssh make jq bash && \
+                  rm -rf /var/cache/apk/*
+              else
+                echo "Unsupported Operating System." && \
+                exit 1
+              fi
       - run:
           name: Remove ips form security group
           command: wget -O - https://raw.githubusercontent.com/apprl/circleci-orb/master/orb/apprl-circleci-tools/remove-ips-from-sg.sh | AWS_DEFAULT_REGION=<<parameters.region>> AWS_SECURITY_GROUP=<<parameters.security_group>> bash
