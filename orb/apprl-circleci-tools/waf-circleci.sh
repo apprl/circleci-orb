@@ -86,8 +86,9 @@ function DeleteIPSet(){
 	fi
 
 	if [[ -n "$IPLIST" ]]; then
-
-        UPDATESET=$(aws waf update-ip-set --ip-set-id ${IPSETID} --change-token ${CHANGETOKEN} --updates "$(echo "$IPLIST" | jq 'map(. + {IPSetDescriptor: (.)})' | jq 'map(. + {Action: ("DELETE")})' | jq 'walk(if type == "object" and length != 2 then del(.Type?, .Value?) else . end)')" 2>&1) # | jq .)
+	    # better way to do it but only works in jq 1.6 version
+        # echo "$IPLIST" | jq 'map(. + {IPSetDescriptor: (.)})' | jq 'map(. + {Action: ("DELETE")})' | jq 'walk(if type == "object" and length != 2 then del(.Type?, .Value?) else . end)'
+        UPDATESET=$(aws waf update-ip-set --ip-set-id ${IPSETID} --change-token ${CHANGETOKEN} --updates "$(echo "$IPLIST"| jq 'map(. + {IPSetDescriptor: (.)})' | jq 'map(. + {Action: ("DELETE")})' | jq -r '.[]' | jq 'del(.Type?, .Value?)' | jq '[.[] | { IPSetDescriptor: {Type: .IPSetDescriptor.Type, Value: .IPSetDescriptor.Value}, Action: .Action}]' --slurp)" 2>&1) # | jq .)
 
         if echo $UPDATESET | grep -q error; then
             fail "$UPDATESET"
