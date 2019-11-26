@@ -88,7 +88,7 @@ function DeleteIPSet(){
 	if [[ -n "$IPLIST" ]]; then
 	    # better way to do it but only works in jq 1.6 version
         # echo "$IPLIST" | jq 'map(. + {IPSetDescriptor: (.)})' | jq 'map(. + {Action: ("DELETE")})' | jq 'walk(if type == "object" and length != 2 then del(.Type?, .Value?) else . end)'
-        UPDATESET=$(aws waf update-ip-set --ip-set-id ${IPSETID} --change-token ${CHANGETOKEN} --updates "$(echo "$IPLIST"| jq 'map(. + {IPSetDescriptor: (.)})' | jq 'map(. + {Action: ("DELETE")})' | jq -r '.[]' | jq 'del(.Type?, .Value?)' | jq '[.[] | { IPSetDescriptor: {Type: .IPSetDescriptor.Type, Value: .IPSetDescriptor.Value}, Action: .Action}]' --slurp)" 2>&1) # | jq .)
+        UPDATESET=$(aws waf update-ip-set --ip-set-id ${IPSETID} --change-token ${CHANGETOKEN} --updates "$(echo "$IPLIST"| jq '[.[] | { IPSetDescriptor: {Type: .IPSetDescriptor.Type, Value: .IPSetDescriptor.Value}, Action: "DELETE"}]' --slurp)" 2>&1) # | jq .)
 
         if echo $UPDATESET | grep -q error; then
             fail "$UPDATESET"
@@ -104,6 +104,9 @@ function DeleteIPSet(){
         fi
     fi
 }
+GetCurrentIpFromIPSetId
 
-DeleteIPSet
-InsertIPSet
+echo "$IPLIST"| jq '[.[] | { IPSetDescriptor: {Type: .[].Type, Value: .[].Value}, Action: "DELETE"}]' --slurp
+#echo "$IPLIST"| jq '[.[] ]'
+#DeleteIPSet
+#InsertIPSet
