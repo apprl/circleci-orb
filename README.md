@@ -23,6 +23,7 @@ circleci orb publish promote apprl/apprl-circleci-tools@dev:first major
 ```
 circleci orb publish promote apprl/apprl-circleci-tools@dev:first [major|minor|patch]
 ```
+PS.: To deploys it's necessary to be a administrator on github.
 
 ### circleCI Orbs
  - https://circleci.com/orbs/registry/
