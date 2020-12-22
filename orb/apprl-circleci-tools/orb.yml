@@ -52,7 +52,8 @@ commands:
     steps:
       - run:
           command: |
-            helm init --client-only
+            helm repo add stable https://charts.helm.sh/stable
+            helm init --client-only --stable-repo-url https://charts.helm.sh/stable
             helm plugin install https://github.com/hypnoglow/helm-s3.git
             AWS_DEFAULT_REGION=eu-west-1 helm repo add apprlcharts s3://apprl-development/k8s/charts
             helm repo add incubator https://charts.helm.sh/incubator
