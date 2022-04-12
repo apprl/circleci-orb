@@ -154,7 +154,7 @@ jobs:
       - run:
           name: Create sentry release
           command: |
-            sentry-cli releases new -p <<parameters.project>> <<parameters.project>>@<<parameters.tag>>
+            sentry-cli releases new --project <<parameters.project>> <<parameters.project>>@<<parameters.tag>>
       - when:
           condition: <<parameters.auto-set-commits>>
           steps:
